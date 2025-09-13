@@ -142,27 +142,79 @@ class AuthenticationController extends Controller
     /**
      * Get list of users (paginated) — protected route.
      */
-    public function userInfo()
+    public function userInfo(Request $request)
     {
         try {
-            $users = User::latest()->paginate(10);
+            $query = User::query();
+
+            // Get all users without pagination
+            $users = $query->latest()->get();
 
             return response()->json([
-                'response_code'  => 200,
-                'status'         => 'success',
-                'message'        => 'Fetched user list successfully',
-                'data_user_list' => $users,
+                'response_code' => 200,
+                'status' => 'success',
+                'data' => $users
             ]);
         } catch (\Exception $e) {
-            Log::error('User List Error: ' . $e->getMessage());
-
             return response()->json([
                 'response_code' => 500,
-                'status'        => 'error',
-                'message'       => 'Failed to fetch user list',
-            ], 500);
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
         }
     }
+
+    public function show($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+        return response()->json($user);
+    }
+
+    // Update user
+    public function update(Request $request)
+    {
+        $user = User::find($request->id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $request->validate([
+            'name' => 'sometimes|string',
+            'email' => 'sometimes|email|unique:users,email,' . $request->id,
+            'role' => 'sometimes|string',
+            'password' => 'nullable|string|min:6'
+        ]);
+
+        $user->name = $request->name ?? $user->name;
+        $user->email = $request->email ?? $user->email;
+        $user->role = $request->role ?? $user->role;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json(['message' => 'User updated', 'user' => $user]);
+    }
+
+    // Delete user
+    public function destroy(Request $request)
+    {
+        $user = User::find($request->id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted']);
+    }
+
+
 
     /**
      * Logout user and revoke tokens — protected route.
