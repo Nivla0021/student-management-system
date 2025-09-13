@@ -147,7 +147,13 @@ class AuthenticationController extends Controller
         try {
             $query = User::query();
 
-            // Get all users without pagination
+            // Filter by role if provided in query
+            if ($request->has('role')) {
+                $role = $request->query('role');
+                $query->where('role', $role);
+            }
+
+            // Get all users matching the query
             $users = $query->latest()->get();
 
             return response()->json([
@@ -163,6 +169,7 @@ class AuthenticationController extends Controller
             ]);
         }
     }
+
 
     public function show($id)
     {
