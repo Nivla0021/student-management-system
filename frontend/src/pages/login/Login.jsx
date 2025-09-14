@@ -41,6 +41,8 @@ export default function Login() {
       } else {
         setError("Something went wrong. Please try again.");
       }
+    } finally {
+      setLoading(false); // 🔥 always reset loading state
     }
   };
 
