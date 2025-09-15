@@ -108,6 +108,37 @@ class AuthenticationController extends Controller
         }
     }
 
+    public function changePassword(Request $request)
+    {
+        $user = Auth::user(); // returns null if not authenticated
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => '❌ User not authenticated.'
+            ], 401);
+        }
+
+        // Check if current password matches
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+            ], 400);
+        }
+
+        $request->validate([
+            'new_password' => 'required|min:8'
+        ]);
+
+        // Update password
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+        ]);
+    }
+
     public function profile(Request $request)
     {
         try {

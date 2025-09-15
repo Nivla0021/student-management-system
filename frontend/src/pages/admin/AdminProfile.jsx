@@ -1,6 +1,7 @@
 // src/pages/admin/AdminProfile.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import AdminLayout from "../../layout/AdminLayout";
 import {
@@ -33,6 +34,10 @@ export default function AdminProfile() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // ✅ toast state
   const [toast, setToast] = useState("");
@@ -121,21 +126,28 @@ export default function AdminProfile() {
 
     try {
       await axios.post("http://localhost:8001/api/change-password", {
-        id: admin.id,
         current_password: currentPassword,
         new_password: newPassword,
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
+
+    
+      // ✅ show success toast
+      setToast("Password changed successfully!");
+      setTimeout(() => setToast(""), 3000);
 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-
-      // ✅ show success toast
-      setToast("Password changed successfully!");
-      setTimeout(() => setToast(""), 3000);
+      
     } catch (err) {
-      console.error("Error changing password:", err);
-      setPasswordError("Failed to change password.");
+      if (err.response) {
+        setPasswordError("⚠️ Current password is wrong!");
+      } else {
+        console.error("Error changing password:", err);
+        setPasswordError("Failed to change password.");
+      }
     } finally {
       setSavingPassword(false);
     }
@@ -271,37 +283,62 @@ export default function AdminProfile() {
 
             <form onSubmit={handlePasswordChange} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="border rounded w-full px-3 py-2"
-                />
+                <label className="block text-sm font-medium">Current Password</label>
+                <div className="relative">
+                  <input
+                    type={showCurrent ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="border rounded w-full px-3 py-2 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrent(!showCurrent)}
+                    className="absolute inset-y-0 right-0 px-3 text-sm text-gray-500"
+                  >
+                    {showCurrent ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
 
+              {/* New Password */}
               <div>
                 <label className="block text-sm font-medium">New Password</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="border rounded w-full px-3 py-2"
-                />
+                <div className="relative">
+                  <input
+                    type={showNew ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="border rounded w-full px-3 py-2 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNew(!showNew)}
+                    className="absolute inset-y-0 right-0 px-3 text-sm text-gray-500"
+                  >
+                    {showNew ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
 
+              {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-medium">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="border rounded w-full px-3 py-2"
-                />
+                <label className="block text-sm font-medium">Confirm Password</label>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="border rounded w-full px-3 py-2 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute inset-y-0 right-0 px-3 text-sm text-gray-500"
+                  >
+                    {showConfirm ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
 
               <button
