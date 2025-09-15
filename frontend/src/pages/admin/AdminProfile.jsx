@@ -96,6 +96,9 @@ export default function AdminProfile() {
         console.warn("Could not update localStorage user:", err);
       }
 
+      localStorage.setItem("user", JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent("userUpdated", { detail: updated }));;
+
       setEditing(false);
 
       // ✅ show success toast

@@ -1,3 +1,4 @@
+// src/layout/AdminLayout.jsx
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
@@ -12,6 +13,7 @@ export default function AdminLayout({ children, title }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Load initial user
     const userInfo = localStorage.getItem("user");
     if (userInfo) setAdmin(JSON.parse(userInfo));
 
@@ -20,17 +22,32 @@ export default function AdminLayout({ children, title }) {
         setDropdownOpen(false);
       }
     };
+
+    // ✅ Listen for custom user update event
+    const handleUserUpdate = (e) => {
+      setAdmin(e.detail);
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("userUpdated", handleUserUpdate);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("userUpdated", handleUserUpdate);
+    };
   }, []);
 
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
       if (token) {
-        await axios.post("http://localhost:8001/api/logout", {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.post(
+          "http://localhost:8001/api/logout",
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       }
     } catch (err) {
       console.error("Logout error:", err);
@@ -51,10 +68,17 @@ export default function AdminLayout({ children, title }) {
       >
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-2">
-            <img src={logo} alt="Logo" className={`w-10 h-10 rounded-full ${!sidebarOpen && "mx-auto"}`} />
+            <img
+              src={logo}
+              alt="Logo"
+              className={`w-10 h-10 rounded-full ${!sidebarOpen && "mx-auto"}`}
+            />
             {sidebarOpen && <span className="text-xl font-bold">Lambingan</span>}
           </div>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-white focus:outline-none cursor-pointer">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="text-white focus:outline-none cursor-pointer"
+          >
             <FaBars />
           </button>
         </div>
@@ -111,9 +135,7 @@ export default function AdminLayout({ children, title }) {
         </header>
 
         {/* Page-specific content */}
-        <main className="flex-1 p-6 bg-gray-100 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 p-6 bg-gray-100 overflow-y-auto">{children}</main>
       </div>
     </div>
   );
