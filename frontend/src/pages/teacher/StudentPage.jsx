@@ -1,11 +1,11 @@
-import AdminLayout from "../../layout/AdminLayout";
-import UserTable from "../../components/admin/UserTable";
+import TeacherLayout from "../../layout/TeacherLayout";
+import StudentTable from "../../components/teacher/StudentTable";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaSpinner } from "react-icons/fa";
 
-export default function UserPage() {
+export default function StudentPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -14,16 +14,17 @@ export default function UserPage() {
   const currentUser = JSON.parse(localStorage.getItem("user"+token));
   const role = currentUser?.role;
 
+  
   const fetchUsers = useCallback(async () => {
     try {
-      
       if (!token) {
         navigate("/login");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const res = await axios.get("http://localhost:8001/api/get-user");
+      const res = await axios.get("http://localhost:8001/api/get-user?role=student");
       setUsers(res.data.data || []);
+      console.log(role)
     } catch (err) {
       console.error("User fetch error:", err);
       setError("Failed to load users.");
@@ -37,7 +38,7 @@ export default function UserPage() {
   }, [fetchUsers]);
 
   return (
-    <AdminLayout title="User Management">
+    <TeacherLayout title="Student Management">
       {loading ? (
         <div className="space-y-6">
           {/* Spinner */}
@@ -67,13 +68,13 @@ export default function UserPage() {
       ) : error ? (
         <p className="text-center text-red-500">{error}</p>
       ) : (
-        <UserTable 
-          users={users} 
-          onReload={fetchUsers} 
-          userRole={role} 
-          token={token} 
-        />
+        <StudentTable 
+          users={users}
+          onReload={fetchUsers}
+          userRole={role}
+          token={token}
+          />
       )}
-    </AdminLayout>
+    </TeacherLayout>
   );
 }

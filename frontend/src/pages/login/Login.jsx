@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import  PasswordInput  from '../../components/PasswordInput'
+import  PasswordInput  from '../../components/admin/PasswordInput'
 import logo from "../../assets/logo.png"; // adjust path
 
 export default function Login() {
@@ -25,7 +25,7 @@ export default function Login() {
       const { token, user_info } = res.data;
 
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user_info));
+      localStorage.setItem("user"+token, JSON.stringify(user_info));
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       if (user_info.role === "admin") {

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
 import Modal from "./Modal";
-import { validateUserForm } from "../utils/Validation"; // ✅ import
+import { validateUserForm } from "../../utils/Validation"; // ✅ import
 
-export default function EditForm({ isOpen, onClose, user, onSuccess }) {
+export default function EditForm({ isOpen, onClose, user, onSuccess, userRole }) {
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [role, setRole] = useState(user?.role || "student");
@@ -38,7 +38,6 @@ export default function EditForm({ isOpen, onClose, user, onSuccess }) {
       setLoading(false);
     }
   };
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit User">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -47,27 +46,33 @@ export default function EditForm({ isOpen, onClose, user, onSuccess }) {
             {error}
           </div>
         )}
+
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="border rounded w-full px-3 py-2"
         />
+
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="border rounded w-full px-3 py-2"
         />
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="border rounded w-full px-3 py-2"
-        >
-          <option value="admin">Admin</option>
-          <option value="teacher">Teacher</option>
-          <option value="student">Student</option>
-        </select>
+
+        {/* ✅ Only show role dropdown if logged-in user is an admin */}
+        {userRole === "admin" && (
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="border rounded w-full px-3 py-2"
+          >
+            <option value="admin">Admin</option>
+            <option value="teacher">Teacher</option>
+            <option value="student">Student</option>
+          </select>
+        )}
 
         <button
           type="submit"

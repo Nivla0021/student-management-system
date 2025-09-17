@@ -2,9 +2,9 @@ import { useState } from "react";
 import axios from "axios";
 import Modal from "./Modal";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { validateUserForm } from "../utils/Validation"; // ✅ import
+import { validateUserForm } from "../../utils/Validation"; // ✅ import
 
-export default function UserForm({ isOpen, onClose, onSuccess }) {
+export default function UserForm({ isOpen, onClose, onSuccess, userRole }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("student");
@@ -77,15 +77,18 @@ export default function UserForm({ isOpen, onClose, onSuccess }) {
           onChange={(e) => setEmail(e.target.value)}
           className="border rounded w-full px-3 py-2"
         />
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="border rounded w-full px-3 py-2"
-        >
-          <option value="admin">Admin</option>
-          <option value="teacher">Teacher</option>
-          <option value="student">Student</option>
-        </select>
+        {userRole == 'admin' && (
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="border rounded w-full px-3 py-2"
+          >
+            <option value="admin">Admin</option>
+            <option value="teacher">Teacher</option>
+            <option value="student">Student</option>
+          </select>
+        )}
+        
 
         <div className="relative">
           <input

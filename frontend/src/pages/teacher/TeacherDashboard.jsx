@@ -1,88 +1,63 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FaUserGraduate } from "react-icons/fa";
+import TeacherLayout from "../../layout/TeacherLayout";
 
 export default function TeacherDashboard() {
-  const [teacher, setTeacher] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [studentCount, setStudentCount] = useState(0);
+  const [countsLoading, setCountsLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    let mounted = true;
-
-    async function fetchProfile() {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
-        const res = await axios.get("http://localhost:8001/api/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!mounted) return;
-
-        setTeacher(res.data.data_user);
-      } catch (err) {
-        console.error("Profile fetch error:", err);
-        if (err.response?.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          navigate("/login");
-        } else {
-          setError("Failed to load profile. Please try again.");
-        }
-      } finally {
-        if (mounted) setLoading(false);
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
     }
-
-    fetchProfile();
-    return () => {
-      mounted = false;
-    };
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    fetchDashboardCounts();
   }, [navigate]);
 
-  const handleLogout = async () => {
+  const fetchDashboardCounts = async () => {
+    setCountsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (token) {
-        await axios.post(
-          "http://localhost:8001/api/logout",
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
+      const resStudents = await axios.get(
+        "http://localhost:8001/api/get-user?role=student"
+      );
+      setStudentCount(resStudents.data.data?.length || 0);
     } catch (err) {
-      console.error("Logout error:", err);
+      console.error("Error fetching counts:", err);
+      setError("Failed to load dashboard stats.");
     } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/login");
+      setCountsLoading(false);
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-
   return (
-    <div>
-      <h1>Teacher Dashboard</h1>
-      {teacher ? (
-        <div>
-          <p><strong>ID:</strong> {teacher.id}</p>
-          <p><strong>Name:</strong> {teacher.name}</p>
-          <p><strong>Email:</strong> {teacher.email}</p>
-          <p><strong>Role:</strong> {teacher.role}</p>
-
-          <button onClick={handleLogout}>Logout</button>
-        </div>
+    <TeacherLayout title="Teacher Dashboard">
+      {error ? (
+        <p className="text-center text-red-500">{error}</p>
       ) : (
-        <p>No profile data available.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          {/* Students Card */}
+          <div className="bg-white rounded-lg shadow-md p-6 cursor-pointer transform transition duration-300 hover:shadow-xl hover:scale-105">
+            {countsLoading ? (
+              <div className="h-24 w-full bg-gray-200 rounded animate-pulse"></div>
+            ) : (
+              <>
+                <FaUserGraduate className="text-green-600 text-4xl mb-2" />
+                <h3 className="text-lg font-semibold mb-2">Students</h3>
+                <p className="text-3xl font-bold text-green-600">
+                  {studentCount}
+                </p>
+              </>
+            )}
+          </div>
+        </div>
       )}
-    </div>
+    </TeacherLayout>
   );
 }

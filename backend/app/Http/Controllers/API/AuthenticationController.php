@@ -211,34 +211,59 @@ class AuthenticationController extends Controller
         }
     }
 
-
-    public function show($id)
-    {
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-        return response()->json($user);
-    }
-
     // Update user
     public function update(Request $request)
     {
-        $user = User::find($request->id);
+        $user = Auth::user(); // returns null if not authenticated
+
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => '❌ User not authenticated.'
+            ], 401);
         }
+        $updatedUser = User::find($request->id);
 
         $request->validate([
             'name' => 'sometimes|string',
             'email' => 'sometimes|email|unique:users,email,' . $request->id,
-            'role' => 'sometimes|string',
+            'role' => 'sometimes|string', // ⚠️ only if you allow role changes
+        ]);
+
+        $updatedUser->name = $request->name ?? $user->name;
+        $updatedUser->email = $request->email ?? $user->email;
+
+
+        if ($request->filled('role')) {
+            $updatedUser->role = $request->role;
+        }
+
+        $updatedUser->save();
+
+        return response()->json([
+            'message' => 'User updated successfully',
+            'user' => $user
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user(); // only the logged-in user
+
+        $request->validate([
+            'name' => 'sometimes|string',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'role' => 'sometimes|string', // ⚠️ only if you allow role changes
             'password' => 'nullable|string|min:6'
         ]);
 
         $user->name = $request->name ?? $user->name;
         $user->email = $request->email ?? $user->email;
-        $user->role = $request->role ?? $user->role;
+
+
+        if ($request->filled('role')) {
+            $user->role = $request->role;
+        }
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -246,20 +271,34 @@ class AuthenticationController extends Controller
 
         $user->save();
 
-        return response()->json(['message' => 'User updated', 'user' => $user]);
+        return response()->json([
+            'message' => 'User updated successfully',
+            'user' => $user
+        ]);
     }
+
 
     // Delete user
     public function destroy(Request $request)
     {
-        $user = User::find($request->id);
+        $user = $request->user(); // returns null if not authenticated
+
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => '❌ User not authenticated.'
+            ], 401);
+        }else{
+            $deleteUser = User::find($request->id);
+            if (!$deleteUser) {
+                return response()->json(['message' => 'User not found'], 404);
+            }
+
+            $deleteUser->delete();
+
+            return response()->json(['message' => 'User deleted']);
         }
 
-        $user->delete();
-
-        return response()->json(['message' => 'User deleted']);
     }
 
 

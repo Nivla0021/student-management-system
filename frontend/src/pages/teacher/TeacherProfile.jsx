@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
-import AdminLayout from "../../layout/AdminLayout";
+import TeacherLayout from "../../layout/TeacherLayout";
 import {
   FaUser,
   FaEdit,
@@ -16,7 +16,7 @@ import {
 import { validateUserForm } from "../../utils/Validation";
 
 export default function AdminProfile() {
-  const [admin, setAdmin] = useState(null);
+  const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
@@ -59,7 +59,7 @@ export default function AdminProfile() {
     try {
       const res = await axios.get("http://localhost:8001/api/profile");
       const user = res.data?.data_user ?? null;
-      setAdmin(user);
+      setTeacher(user);
       setName(user?.name ?? "");
       setEmail(user?.email ?? "");
     } catch (err) {
@@ -87,15 +87,14 @@ export default function AdminProfile() {
         email,
       });
 
-      const updated = { ...admin, name, email };
-      setAdmin(updated);
+      const updated = { ...teacher, name, email };
+      setTeacher(updated);
       try {
         localStorage.setItem("user"+token, JSON.stringify(updated));
         window.dispatchEvent(new CustomEvent("userUpdated", { detail: updated }));;
       } catch (err) {
         console.warn("Could not update localStorage user:", err);
       }
-
       setEditing(false);
 
       // ✅ show success toast
@@ -159,13 +158,13 @@ export default function AdminProfile() {
   };
   const cancelEdit = () => {
     setValidationError("");
-    setName(admin?.name ?? "");
-    setEmail(admin?.email ?? "");
+    setName(teacher?.name ?? "");
+    setEmail(teacher?.email ?? "");
     setEditing(false);
   };
 
   return (
-    <AdminLayout title="Profile">
+    <TeacherLayout title="Profile">
       {/* ✅ Toast Notification */}
       {toast && (
         <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg flex items-center gap-2 animate-fade-in">
@@ -185,8 +184,8 @@ export default function AdminProfile() {
           <div className="flex items-center gap-4 mb-4">
             <FaUser className="text-blue-600 text-4xl" />
             <div>
-              <h2 className="text-xl font-bold">{admin?.name}</h2>
-              <p className="text-gray-600">{admin?.email}</p>
+              <h2 className="text-xl font-bold">{teacher?.name}</h2>
+              <p className="text-gray-600">{teacher?.email}</p>
             </div>
           </div>
 
@@ -194,12 +193,12 @@ export default function AdminProfile() {
             <>
               <div className="border-t pt-4 space-y-2">
                 <p>
-                  <span className="font-semibold">Role:</span> {admin?.role}
+                  <span className="font-semibold">Role:</span> {teacher?.role}
                 </p>
                 <p>
                   <span className="font-semibold">Joined:</span>{" "}
-                  {admin?.created_at
-                    ? new Date(admin.created_at).toLocaleDateString()
+                  {teacher?.created_at
+                    ? new Date(teacher.created_at).toLocaleDateString()
                     : "-"}
                 </p>
               </div>
@@ -362,6 +361,6 @@ export default function AdminProfile() {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </TeacherLayout>
   );
 }

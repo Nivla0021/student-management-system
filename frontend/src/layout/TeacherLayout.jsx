@@ -5,10 +5,10 @@ import logo from "../assets/logo.png";
 import { FaBars, FaUser, FaSignOutAlt, FaChalkboardTeacher } from "react-icons/fa";
 import axios from "axios";
 
-export default function AdminLayout({ children, title }) {
+export default function TeacherLayout({ children, title }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [admin, setAdmin] = useState(null);
+  const [teacher, setTeacher] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false); // ✅ loading screen state
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function AdminLayout({ children, title }) {
   useEffect(() => {
     // Load initial user
     const userInfo = localStorage.getItem("user"+token);
-    if (userInfo) setAdmin(JSON.parse(userInfo));
+    if (userInfo) setTeacher(JSON.parse(userInfo));
 
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -27,7 +27,7 @@ export default function AdminLayout({ children, title }) {
 
     // ✅ Listen for custom user update event
     const handleUserUpdate = (e) => {
-      setAdmin(e.detail);
+      setTeacher(e.detail);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -93,18 +93,18 @@ export default function AdminLayout({ children, title }) {
 
         <nav className="flex flex-col mt-6 gap-2 px-2">
           <button
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate("/teacher")}
             className="flex items-center gap-2 px-3 py-2 rounded hover:bg-indigo-600 transition-colors cursor-pointer"
           >
             <FaChalkboardTeacher />
             {sidebarOpen && <span>Dashboard</span>}
           </button>
           <button
-            onClick={() => navigate("/admin/user-management")}
+            onClick={() => navigate("/teacher/student-management")}
             className="flex items-center gap-2 px-3 py-2 rounded hover:bg-indigo-600 transition-colors cursor-pointer"
           >
             <FaUser />
-            {sidebarOpen && <span>Manage Users</span>}
+            {sidebarOpen && <span>Manage Students</span>}
           </button>
         </nav>
       </aside>
@@ -121,12 +121,12 @@ export default function AdminLayout({ children, title }) {
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 px-4 py-2 border rounded hover:bg-gray-100 transition-colors cursor-pointer"
             >
-              <span>{admin?.name}</span>
+              <span>{teacher?.name}</span>
             </button>
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
                 <button
-                  onClick={() => navigate("/admin/profile")}
+                  onClick={() => navigate("/teacher/profile")}
                   className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 cursor-pointer"
                 >
                   <FaUser /> Profile
