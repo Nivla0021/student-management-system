@@ -23,6 +23,15 @@ class AuthenticationController extends Controller
                 'email'    => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8',
                 'role'     => 'required|string',
+            ], [
+                'name.required'     => '⚠️ Name is required.',
+                'name.min'          => '⚠️ Name must be at least 4 characters.',
+                'email.required'    => '⚠️ Email is required.',
+                'email.email'       => '⚠️ Please enter a valid email address.',
+                'email.unique'      => '⚠️ This email is already registered.',
+                'password.required' => '⚠️ Password is required.',
+                'password.min'      => '⚠️ Password must be at least 8 characters.',
+                'role.required'     => '⚠️ Role is required.',
             ]);
 
             $user = User::create([
@@ -35,14 +44,14 @@ class AuthenticationController extends Controller
             return response()->json([
                 'response_code' => 201,
                 'status'        => 'success',
-                'message'       => 'Successfully registered',
+                'message'       => '✅ Successfully registered',
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'response_code' => 422,
                 'status'        => 'error',
-                'message'       => 'Validation failed',
-                'errors'        => $e->errors(),
+                'message'       => '⚠️ Please fix the errors below.',
+                'errors'        => $e->errors(), // <-- each field has its own messages
             ], 422);
         } catch (\Exception $e) {
             Log::error('Registration Error: ' . $e->getMessage());
@@ -50,10 +59,11 @@ class AuthenticationController extends Controller
             return response()->json([
                 'response_code' => 500,
                 'status'        => 'error',
-                'message'       => 'Registration failed',
+                'message'       => '❌ Registration failed. Please try again later.',
             ], 500);
         }
     }
+
 
     /**
      * Login and return auth token.

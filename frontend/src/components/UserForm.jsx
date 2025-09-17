@@ -40,10 +40,19 @@ export default function UserForm({ isOpen, onClose, onSuccess }) {
       onClose();
     } catch (err) {
       console.error(err);
-      setError("⚠️ Failed to create user. Please try again.");
+
+      if (err.response && err.response.status === 422) {
+        // Laravel validation errors
+        const errors = err.response.data.errors;
+        const messages = Object.values(errors).flat().join(" ");
+        setError(messages);
+      } else {
+        setError("❌ Failed to create user. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
