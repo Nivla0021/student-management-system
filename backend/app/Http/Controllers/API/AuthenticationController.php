@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Models\Admin;
+use App\Models\Teacher;
+use App\Models\Student;
 
 class AuthenticationController extends Controller
 {
@@ -40,6 +43,63 @@ class AuthenticationController extends Controller
                 'password' => Hash::make($validated['password']),
                 'role'     => $validated['role']
             ]);
+            if($validated['role'] == 'admin'){
+                Admin::create([
+                    'user_id' => $user->id
+                ]);
+            }else if($validated['role'] == 'teacher'){
+                // ✅ Dynamic prefix based on current year
+                $prefix = date('Y'); // e.g. 2025
+
+                // ✅ Find last employee ID for this year
+                $lastEmployee = Teacher::where('employee_id', 'like', $prefix . '%')
+                                    ->orderBy('employee_id', 'desc')
+                                    ->first();
+
+                if ($lastEmployee) {
+                    // Get numeric part after the year prefix
+                    $lastNumber = intval(substr($lastEmployee->employee_id, 4));
+                    $nextNumber = $lastNumber + 1;
+                } else {
+                    // Start fresh at 1000 for each new year
+                    $nextNumber = 1000;
+                }
+
+                // ✅ Build employee ID (e.g., 20251000, 20251001…)
+                $employeeId = $prefix . $nextNumber;
+                Teacher::create([
+                    'user_id' => $user->id,
+                    'employee_id' => $employeeId,
+                    'department' => 'English Department',
+                    'specialization' => 'English'
+                ]);
+            }else if($validated['role'] == 'student'){
+                // ✅ Dynamic prefix based on current year
+                $stud_prefix = date('Y'); // e.g. 2025
+
+                // ✅ Find last employee ID for this year
+                $lastStudent = Student::where('student_id', 'like', $stud_prefix . '%')
+                                    ->orderBy('student_id', 'desc')
+                                    ->first();
+
+                if ($lastStudent) {
+                    // Get numeric part after the year prefix
+                    $lastStudNumber = intval(substr($lastStudent->student_id, 4));
+                    $nextStudNumber = $lastStudNumber + 1;
+                } else {
+                    // Start fresh at 1000 for each new year
+                    $nextStudNumber = 1000;
+                }
+
+                // ✅ Build employee ID (e.g., 20251000, 20251001…)
+                $studentId = $stud_prefix . $nextStudNumber;
+                Student::create([
+                    'user_id' => $user->id,
+                    'student_id' => $studentId,
+                    'course' => 'BSIT',
+                    'year_level' => '1st Year'
+                ]);
+            }
 
             return response()->json([
                 'response_code' => 201,

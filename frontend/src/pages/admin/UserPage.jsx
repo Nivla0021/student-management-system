@@ -71,7 +71,8 @@ export default function UserPage() {
           users={users} 
           onReload={fetchUsers} 
           userRole={role} 
-          token={token} 
+          token={token}
+          adminId={currentUser.id}
         />
       )}
     </AdminLayout>

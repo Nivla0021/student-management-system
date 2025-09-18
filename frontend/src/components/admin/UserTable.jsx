@@ -8,7 +8,7 @@ import ViewForm from "./ViewForm";
 import EditForm from "./EditForm";
 import DeleteForm from "./DeleteForm";
 
-export default function UserTable({ users, onReload, userRole, token }) {
+export default function UserTable({ users, onReload, userRole, token, adminId }) {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -193,6 +193,8 @@ export default function UserTable({ users, onReload, userRole, token }) {
             showToast("✅ User added successfully!");
             setModalType(null);
           }}
+          userRole={userRole}
+          adminId={adminId}
         />
       )}
       {modalType === "view" && selectedUser && (

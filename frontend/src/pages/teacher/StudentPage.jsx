@@ -24,7 +24,6 @@ export default function StudentPage() {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       const res = await axios.get("http://localhost:8001/api/get-user?role=student");
       setUsers(res.data.data || []);
-      console.log(role)
     } catch (err) {
       console.error("User fetch error:", err);
       setError("Failed to load users.");
